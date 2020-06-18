@@ -5,6 +5,14 @@ function App() {
   // Set the default size of the grid.
   const [size, setSize] = useState(50);
 
+  const createGrid = (num) => {
+    const newGrid = new Array(num).fill(null);
+    newGrid.forEach((item, idx) => {
+      newGrid[idx] = new Array(num).fill(null);
+    });
+    return newGrid;
+  };
+
   return (
     <div className="App">
       <h1>Conway's Game of Life</h1>
