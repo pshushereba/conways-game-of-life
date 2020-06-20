@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 function App() {
@@ -8,6 +8,7 @@ function App() {
   const [grid, setGrid] = useState([]);
   // Track whether the game is running or not.
   const [running, setRunning] = useState(false);
+  const canvasRef = useRef(null);
 
   console.log(grid);
   useEffect(() => {
@@ -28,13 +29,19 @@ function App() {
       <h1>Conway's Game of Life</h1>
       <h2>Generation:</h2>
       <div className="grid">
-        <canvas
-          style={{
-            height: `500px`,
-            width: `500px`,
-            backgroundColor: "#00b5ff",
-          }}
-        ></canvas>
+        {grid.map((item) => {
+          return item.map((node) => {
+            return (
+              <canvas
+                style={{
+                  height: `${500 / size}px`,
+                  width: `${500 / size}px`,
+                  backgroundColor: "#00b5ff",
+                }}
+              ></canvas>
+            );
+          });
+        })}
       </div>
       <button>Play</button>
       <button>Pause</button>
@@ -58,3 +65,15 @@ export default App;
 //     );
 //   });
 // })}
+
+{
+  /* <canvas
+ref={canvasRef}
+style={{
+  height: `500px`,
+  width: `500px`,
+  backgroundColor: "#00b5ff",
+}}
+></canvas>
+</div> */
+}
