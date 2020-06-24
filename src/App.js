@@ -30,7 +30,7 @@ function App() {
 
   useEffect(() => {
     createGrid(size);
-  }, []);
+  }, [size]);
 
   const createGrid = (num) => {
     const newGrid = new Array(num).fill(0);
@@ -58,7 +58,7 @@ function App() {
       setUpdatedGrid(grid);
     }
     setGrid(grid);
-    // console.log(grid);
+    //console.log(grid);
   };
 
   const toggleGame = () => {
@@ -67,10 +67,10 @@ function App() {
 
   const clearBoard = () => {
     setRunning(false);
-    createGrid();
+    createGrid(size);
   };
 
-  const countNeighbors = (currentGrid, i, j) => {
+  const countActiveNeighbors = (currentGrid, i, j) => {
     let neighbors = 0;
     const directions = [
       [-1, -1],
@@ -95,23 +95,61 @@ function App() {
         j1 >= 0 &&
         j1 < currentGrid.length
       ) {
-        neighbors += 1;
+        if (currentGrid[i1][j1] === 1) {
+          neighbors += 1;
+        }
       }
     }
+    console.log(neighbors);
     return neighbors;
   };
 
-  // console.log(countNeighbors(grid, 3, 3));
-
   const generateNextGen = () => {
-    // Figure out how to run through all of the active cells.
-    // countNeighbors()
-    // use result of countNeighbors() to change the state of updatedGrid
+    // Figure out how to run through all of the cells.
+    const points = [];
+
+    for (let i = 0; i < grid.length; i++) {
+      for (let j = 0; j < grid.length; j++) {
+        console.log(grid[i][j]);
+        console.log(countActiveNeighbors(grid, i, j));
+        if (
+          countActiveNeighbors(grid, i, j) < 2 ||
+          countActiveNeighbors(grid, i, j) > 3
+        ) {
+          updatedGrid[i][j] = 0;
+          console.log("1", grid[i][j]);
+          setUpdatedGrid(updatedGrid);
+        } else {
+          updatedGrid[i][j] = 1;
+          console.log("2", grid[i][j]);
+          setUpdatedGrid(updatedGrid);
+        }
+        if (
+          countActiveNeighbors(grid, i, j) === 2 ||
+          countActiveNeighbors(grid, i, j) === 3
+        ) {
+          updatedGrid[i][j] = 1;
+          console.log("3", grid[i][j]);
+          setUpdatedGrid(updatedGrid);
+        }
+        if (countActiveNeighbors(grid, i, j) === 3 && grid[i][j] === 0) {
+          updatedGrid[i][j] = 1;
+          console.log("4", grid[i][j]);
+          setUpdatedGrid(updatedGrid);
+        }
+      }
+    }
+    console.log(updatedGrid);
+    // countActiveNeighbors()
+    // use result of countActiveNeighbors() to change the state of updatedGrid
     // if neighbors == 2 or neighbors == 3
+    // points.push(i,j)
     // updateGrid with alive cell at this index
     // if neighbors > 3 or neighbors < 2
     // update grid with dead cell at this index
   };
+
+  //console.log(generateNextGen());
 
   return (
     <div className="App">
@@ -126,9 +164,8 @@ function App() {
                 style={{
                   height: `${500 / size}px`,
                   width: `${500 / size}px`,
-                  backgroundColor: "#0000ff",
                 }}
-                className={col ? "alive" : "dead"}
+                className={col === 1 ? "alive" : "dead"}
                 ref={canvasRef}
                 // need to pass node location, (row, col) and a value to updateGrid so that I can update the correct node for the updated grid.
                 onClick={() => toggleCell(i, j)}
@@ -137,9 +174,9 @@ function App() {
           });
         })}
       </div>
-      {/* <button onClick={() => createGrid(size)}>Start</button> */}
-      <button>Next</button>
-      <button>Clear</button>
+      <button onClick={() => createGrid(size)}>Start</button>
+      <button onClick={() => generateNextGen()}>Next</button>
+      <button onClick={() => clearBoard()}>Clear</button>
     </div>
   );
 }
@@ -154,4 +191,3 @@ export default App;
 // if a cell has less than 2 neighbors, it dies.
 // if a cell has more than 3 neighbors, it dies.
 // use the current state of the board and the neighbors to determine which cells are alive or dead for the next generation.
-// set the updatedGrid to
