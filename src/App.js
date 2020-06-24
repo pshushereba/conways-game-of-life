@@ -83,24 +83,25 @@ function App() {
       [1, 1],
     ];
     // i = y / j = x
-    for (let k = 0; i < directions.length; k++) {
-      const dir = directions[i];
+    for (let k = 0; k <= directions.length; k++) {
+      const dir = directions[k];
+
       let i1 = i + dir[1];
       let j1 = j + dir[0];
-      console.log("Pair", i1, j1, currentGrid.length);
-      console.log("i/j", i, j);
+      // console.log("Pair", i1, j1, currentGrid.length);
+      // console.log("i/j", i, j);
       if (
         i1 >= 0 &&
-        i1 < currentGrid.length &&
+        i1 <= currentGrid.length &&
         j1 >= 0 &&
-        j1 < currentGrid.length
+        j1 <= currentGrid.length
       ) {
         if (currentGrid[i1][j1] === 1) {
           neighbors += 1;
         }
       }
     }
-    console.log(neighbors);
+    //console.log(neighbors);
     return neighbors;
   };
 
@@ -108,10 +109,11 @@ function App() {
     // Figure out how to run through all of the cells.
     const points = [];
 
+    console.log(grid.length);
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid.length; j++) {
-        console.log(grid[i][j]);
-        console.log(countActiveNeighbors(grid, i, j));
+        // console.log(grid[i][j]);
+        // console.log(countActiveNeighbors(grid, i, j));
         if (
           countActiveNeighbors(grid, i, j) < 2 ||
           countActiveNeighbors(grid, i, j) > 3
@@ -167,7 +169,6 @@ function App() {
                 }}
                 className={col === 1 ? "alive" : "dead"}
                 ref={canvasRef}
-                // need to pass node location, (row, col) and a value to updateGrid so that I can update the correct node for the updated grid.
                 onClick={() => toggleCell(i, j)}
               ></canvas>
             );
@@ -177,6 +178,9 @@ function App() {
       <button onClick={() => createGrid(size)}>Start</button>
       <button onClick={() => generateNextGen()}>Next</button>
       <button onClick={() => clearBoard()}>Clear</button>
+      <button>30</button>
+      <button>40</button>
+      <button>50</button>
     </div>
   );
 }
