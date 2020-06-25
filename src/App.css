@@ -24,19 +24,6 @@
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .grid {
   height: 500px;
   width: 500px;
@@ -44,12 +31,13 @@
   margin: 0 auto;
   line-height: 0;
   cursor: "pointer";
-}
-
-.alive {
-  background-color: #ffffff;
+  overflow: hidden;
 }
 
 .dead {
+  background-color: #ffffff;
+}
+
+.alive {
   background-color: #0000ff;
 }

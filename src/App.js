@@ -17,8 +17,8 @@ function App() {
   // useRef hook to use for canvas context.
   const canvasRef = useRef();
 
-  // console.log("grid", grid);
-  // console.log("updatedGrid", updatedGrid);
+  console.log("grid", grid);
+  console.log("updatedGrid", updatedGrid);
 
   // useEffect(() => {
   //   if (grid) {
@@ -67,10 +67,12 @@ function App() {
 
   const clearBoard = () => {
     setRunning(false);
+    setSize(20);
     createGrid(size);
   };
 
   const countActiveNeighbors = (currentGrid, i, j) => {
+    console.log(currentGrid);
     let neighbors = 0;
     const directions = [
       [-1, -1],
@@ -83,7 +85,7 @@ function App() {
       [1, 1],
     ];
     // i = y / j = x
-    for (let k = 0; k <= directions.length; k++) {
+    for (let k = 0; k <= directions.length - 1; k++) {
       const dir = directions[k];
 
       let i1 = i + dir[1];
@@ -92,9 +94,9 @@ function App() {
       // console.log("i/j", i, j);
       if (
         i1 >= 0 &&
-        i1 <= currentGrid.length &&
+        i1 <= currentGrid.length - 1 &&
         j1 >= 0 &&
-        j1 <= currentGrid.length
+        j1 <= currentGrid.length - 1
       ) {
         if (currentGrid[i1][j1] === 1) {
           neighbors += 1;
@@ -107,36 +109,27 @@ function App() {
 
   const generateNextGen = () => {
     // Figure out how to run through all of the cells.
-    const points = [];
+    // const points = [];
 
-    console.log(grid.length);
+    // console.log(grid.length);
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid.length; j++) {
         // console.log(grid[i][j]);
+        const numNeighbors = countActiveNeighbors(grid, i, j);
         // console.log(countActiveNeighbors(grid, i, j));
-        if (
-          countActiveNeighbors(grid, i, j) < 2 ||
-          countActiveNeighbors(grid, i, j) > 3
-        ) {
+        // Any live cell with fewer than two live neighbours dies, as if by underpopulation.
+        // Any live cell with more than three live neighbours dies, as if by overpopulation.
+        if (numNeighbors < 2 || numNeighbors > 3) {
+          console.log(n);
           updatedGrid[i][j] = 0;
-          console.log("1", grid[i][j]);
           setUpdatedGrid(updatedGrid);
-        } else {
+          // Any live cell with two or three live neighbours lives on to the next generation.
+        } else if (numNeighbors === 2 || numNeighbors === 3) {
           updatedGrid[i][j] = 1;
-          console.log("2", grid[i][j]);
           setUpdatedGrid(updatedGrid);
-        }
-        if (
-          countActiveNeighbors(grid, i, j) === 2 ||
-          countActiveNeighbors(grid, i, j) === 3
-        ) {
+          // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+        } else if (numNeighbors === 3 && grid[i][j] === 0) {
           updatedGrid[i][j] = 1;
-          console.log("3", grid[i][j]);
-          setUpdatedGrid(updatedGrid);
-        }
-        if (countActiveNeighbors(grid, i, j) === 3 && grid[i][j] === 0) {
-          updatedGrid[i][j] = 1;
-          console.log("4", grid[i][j]);
           setUpdatedGrid(updatedGrid);
         }
       }
@@ -149,6 +142,7 @@ function App() {
     // updateGrid with alive cell at this index
     // if neighbors > 3 or neighbors < 2
     // update grid with dead cell at this index
+    setGeneration(generation + 1);
   };
 
   //console.log(generateNextGen());
@@ -164,8 +158,9 @@ function App() {
               <canvas
                 key={(i, j)}
                 style={{
-                  height: `${500 / size}px`,
-                  width: `${500 / size}px`,
+                  height: `${450 / size}px`,
+                  width: `${450 / size}px`,
+                  border: "1px solid black",
                 }}
                 className={col === 1 ? "alive" : "dead"}
                 ref={canvasRef}
@@ -178,9 +173,58 @@ function App() {
       <button onClick={() => createGrid(size)}>Start</button>
       <button onClick={() => generateNextGen()}>Next</button>
       <button onClick={() => clearBoard()}>Clear</button>
-      <button>30</button>
-      <button>40</button>
-      <button>50</button>
+      <button
+        onClick={() => {
+          setSize(30);
+          createGrid(size);
+        }}
+      >
+        30
+      </button>
+      <button
+        onClick={() => {
+          setSize(40);
+          createGrid(size);
+        }}
+      >
+        40
+      </button>
+      <button
+        onClick={() => {
+          setSize(50);
+          createGrid(size);
+        }}
+      >
+        50
+      </button>
+      <div className="rules-container">
+        <p>
+          The universe of the Game of Life is an infinite, two-dimensional
+          orthogonal grid of square cells, each of which is in one of two
+          possible states, live or dead, (or populated and unpopulated,
+          respectively). Every cell interacts with its eight neighbours, which
+          are the cells that are horizontally, vertically, or diagonally
+          adjacent. At each step in time, the following transitions occur:
+        </p>
+        <ul>
+          <li>
+            Any live cell with fewer than two live neighbours dies, as if by
+            underpopulation.
+          </li>
+          <li>
+            Any live cell with two or three live neighbours lives on to the next
+            generation.
+          </li>
+          <li>
+            Any live cell with more than three live neighbours dies, as if by
+            overpopulation.
+          </li>
+          <li>
+            Any dead cell with exactly three live neighbours becomes a live
+            cell, as if by reproduction.
+          </li>
+        </ul>
+      </div>
     </div>
   );
 }
