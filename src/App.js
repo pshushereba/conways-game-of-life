@@ -32,6 +32,12 @@ function App() {
     createGrid(size);
   }, [size]);
 
+  // useEffect(() => {
+  //   if (running) {
+  //     requestAnimationFrame(generateNextGen);
+  //   }
+  // }, [running]);
+
   const createGrid = (num) => {
     const newGrid = new Array(num).fill(0);
     newGrid.forEach((item, idx) => {
@@ -90,8 +96,8 @@ function App() {
 
       let i1 = i + dir[1];
       let j1 = j + dir[0];
-      // console.log("Pair", i1, j1, currentGrid.length);
-      // console.log("i/j", i, j);
+      console.log("Pair", i1, j1, currentGrid.length);
+      console.log("i/j", i, j);
       if (
         i1 >= 0 &&
         i1 <= currentGrid.length - 1 &&
@@ -110,35 +116,40 @@ function App() {
   const generateNextGen = () => {
     // Figure out how to run through all of the cells.
     // const points = [];
-
+    // If the cell is alive, run conditionals for alive cells. Else, run the last condition to check if it has three neighbors.
     // console.log(grid.length);
+    // const testGrid = updatedGrid;
+
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid.length; j++) {
         // console.log(grid[i][j]);
         const numNeighbors = countActiveNeighbors(grid, i, j);
         // console.log(countActiveNeighbors(grid, i, j));
-        // Any live cell with fewer than two live neighbours dies, as if by underpopulation.
-        // Any live cell with more than three live neighbours dies, as if by overpopulation.
-        if (numNeighbors < 2 || numNeighbors > 3) {
-          console.log(n);
-          updatedGrid[i][j] = 0;
-          setUpdatedGrid(updatedGrid);
-          // Any live cell with two or three live neighbours lives on to the next generation.
-        } else if (numNeighbors === 2 || numNeighbors === 3) {
-          updatedGrid[i][j] = 1;
-          setUpdatedGrid(updatedGrid);
+        if (grid[i][j] === 1) {
+          if (numNeighbors < 2 || numNeighbors > 3) {
+            //console.log(numNeighbors);
+            updatedGrid[i][j] = 0;
+            //setUpdatedGrid(updatedGrid);
+            // Any live cell with two or three live neighbours lives on to the next generation.
+          } else if (numNeighbors === 2 || numNeighbors === 3) {
+            //console.log(numNeighbors);
+            updatedGrid[i][j] = 1;
+            //setUpdatedGrid(updatedGrid);
+          }
+          // Any live cell with fewer than two live neighbours dies, as if by underpopulation.
+          // Any live cell with more than three live neighbours dies, as if by overpopulation.
           // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-        } else if (numNeighbors === 3 && grid[i][j] === 0) {
-          updatedGrid[i][j] = 1;
-          setUpdatedGrid(updatedGrid);
+        } else {
+          if (numNeighbors === 3 && grid[i][j] === 0) {
+            //console.log(numNeighbors);
+            updatedGrid[i][j] = 1;
+            //setUpdatedGrid(updatedGrid);
+          }
         }
       }
     }
     console.log(updatedGrid);
-    // countActiveNeighbors()
-    // use result of countActiveNeighbors() to change the state of updatedGrid
-    // if neighbors == 2 or neighbors == 3
-    // points.push(i,j)
+    setUpdatedGrid(updatedGrid);
     // updateGrid with alive cell at this index
     // if neighbors > 3 or neighbors < 2
     // update grid with dead cell at this index
