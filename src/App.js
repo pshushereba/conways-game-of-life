@@ -16,17 +16,20 @@ function App() {
   const [generation, setGeneration] = useState(0);
   // useRef hook to use for canvas context.
   const canvasRef = useRef();
+  // Track which of the animation frames is being displayed.
+  const [activeFrame, setActiveFrame] = useState(1);
 
   console.log("grid", grid);
   console.log("updatedGrid", updatedGrid);
 
-  // useEffect(() => {
-  //   if (grid) {
-  //   show grid
-  //   } else {
-  //   show updatedGrid
-  //   }
-  // }, [size]);
+  // What double buffer might look like:
+  // if (activeFrame === 1) {
+  //    setUpdatedGrid(generateNextGen())
+  //    setActiveFrame(2);
+  //} else {
+  //    setGrid(generateNextGen());
+  //    setActiveFrame(1);
+  //}
 
   useEffect(() => {
     createGrid(size);
@@ -64,7 +67,6 @@ function App() {
       setUpdatedGrid(grid);
     }
     setGrid(grid);
-    //console.log(grid);
   };
 
   const toggleGame = () => {
@@ -109,41 +111,24 @@ function App() {
         }
       }
     }
-    //console.log(neighbors);
     return neighbors;
   };
 
   const generateNextGen = () => {
-    // Figure out how to run through all of the cells.
-    // const points = [];
-    // If the cell is alive, run conditionals for alive cells. Else, run the last condition to check if it has three neighbors.
-    // console.log(grid.length);
     // const testGrid = updatedGrid;
 
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid.length; j++) {
-        // console.log(grid[i][j]);
         const numNeighbors = countActiveNeighbors(grid, i, j);
-        // console.log(countActiveNeighbors(grid, i, j));
         if (grid[i][j] === 1) {
           if (numNeighbors < 2 || numNeighbors > 3) {
-            //console.log(numNeighbors);
             updatedGrid[i][j] = 0;
-            //setUpdatedGrid(updatedGrid);
-            // Any live cell with two or three live neighbours lives on to the next generation.
           } else if (numNeighbors === 2 || numNeighbors === 3) {
-            //console.log(numNeighbors);
             updatedGrid[i][j] = 1;
-            //setUpdatedGrid(updatedGrid);
           }
-          // Any live cell with fewer than two live neighbours dies, as if by underpopulation.
-          // Any live cell with more than three live neighbours dies, as if by overpopulation.
-          // Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
         } else {
           if (numNeighbors === 3 && grid[i][j] === 0) {
-            //console.log(numNeighbors);
             updatedGrid[i][j] = 1;
-            //setUpdatedGrid(updatedGrid);
           }
         }
       }
@@ -183,8 +168,8 @@ function App() {
         <canvas
           ref={canvasRef}
           onClick={toggleCell}
-          width={size * 10 + "px"}
-          height={size * 10 + "px"}
+          width={size * 25 + "px"}
+          height={size * 25 + "px"}
         />
       </div>
       <button onClick={() => createGrid(size)}>Start</button>
@@ -247,12 +232,3 @@ function App() {
 }
 
 export default App;
-
-// generate empty grid
-// make each cell able to be toggled by the user
-// when game runs:
-// take the current state of the board, and calculate the neighbors for each of the active cells
-// if a cell has two or three neighbors it survives to the next generation.
-// if a cell has less than 2 neighbors, it dies.
-// if a cell has more than 3 neighbors, it dies.
-// use the current state of the board and the neighbors to determine which cells are alive or dead for the next generation.
