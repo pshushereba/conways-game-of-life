@@ -163,7 +163,7 @@ function App() {
       <h1>Conway's Game of Life</h1>
       <h2>Generation:</h2>
       <div className="grid">
-        {grid.map((row, i) => {
+        {/* {grid.map((row, i) => {
           return row.map((col, j) => {
             return (
               <canvas
@@ -179,7 +179,13 @@ function App() {
               ></canvas>
             );
           });
-        })}
+        })} */}
+        <canvas
+          ref={canvasRef}
+          onClick={toggleCell}
+          width={size * 10 + "px"}
+          height={size * 10 + "px"}
+        />
       </div>
       <button onClick={() => createGrid(size)}>Start</button>
       <button onClick={() => generateNextGen()}>Next</button>
