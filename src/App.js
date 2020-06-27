@@ -61,9 +61,18 @@ function App() {
     // check to see if the selected cell is alive or dead.
     // if alive, switch state and reduce population
     // else, toggle cell alive, increase population, and update grid.
-    let i = Math.floor((event.clientX - canvasRef.current.offsetLeft) / size);
-    let j = Math.floor((event.clientY - canvasRef.current.offsetTop) / size);
-    debugger;
+    let m = canvasRef.current.clientWidth / canvasRef.current.width;
+    let i = Math.floor(
+      ((event.clientX - canvasRef.current.offsetLeft) * m) / size
+    );
+    let j = Math.floor(
+      ((event.clientY - canvasRef.current.offsetTop) * m) / size
+    );
+    console.log(m);
+    console.log(
+      (event.clientX - canvasRef.current.offsetLeft * m) /
+        canvasRef.current.offsetWidth
+    );
 
     if (grid[i][j]) {
       grid[i][j] = 0;
