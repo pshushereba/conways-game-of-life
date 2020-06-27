@@ -6,8 +6,6 @@ function App() {
   const [size, setSize] = useState(20);
   // Hold the initial empty grid in state.
   const [grid, setGrid] = useState([]);
-  // Hold the updated grid in state.
-  const [updatedGrid, setUpdatedGrid] = useState([]);
   // Track whether the game is running or not.
   const [running, setRunning] = useState(false);
   // Track the population on the game board.
@@ -20,27 +18,19 @@ function App() {
   // const [activeFrame, setActiveFrame] = useState(1);
   const [offScreenBuffer, setOffScreenBuffer] = useState(null);
 
-  console.log("grid", grid);
-  console.log("updatedGrid", updatedGrid);
-
-  // What double buffer might look like:
-  // if (activeFrame === 1) {
-  //    setUpdatedGrid(generateNextGen())
-  //    setActiveFrame(2);
-  //} else {
-  //    setGrid(generateNextGen());
-  //    setActiveFrame(1);
-  //}
-
   useEffect(() => {
     createGrid(size);
   }, [size]);
 
-  // useEffect(() => {
-  //   if (running) {
-  //     requestAnimationFrame(generateNextGen);
-  //   }
-  // }, [running]);
+  useEffect(() => {
+    if (running) {
+      requestAnimationFrame(generateNextGen);
+    }
+  }, [running]);
+
+  useEffect(() => {
+    drawOffscreenBuffer();
+  }, [grid]);
 
   const createGrid = (num) => {
     const newGrid = new Array(num).fill(0);
@@ -48,7 +38,6 @@ function App() {
       newGrid[idx] = new Array(num).fill(0);
     });
     setGrid(newGrid);
-    setUpdatedGrid(newGrid);
     let buffer = document.createElement("canvas");
     buffer.width = size * 25;
     buffer.height = size * 25;
@@ -61,7 +50,7 @@ function App() {
     // check to see if the selected cell is alive or dead.
     // if alive, switch state and reduce population
     // else, toggle cell alive, increase population, and update grid.
-    let m = canvasRef.current.clientWidth / canvasRef.current.width;
+    let m = canvasRef.current.offsetWidth / canvasRef.current.width;
     let i = Math.floor(
       ((event.clientX - canvasRef.current.offsetLeft) * m) / size
     );
@@ -73,23 +62,19 @@ function App() {
       (event.clientX - canvasRef.current.offsetLeft * m) /
         canvasRef.current.offsetWidth
     );
-
-    if (grid[i][j]) {
-      grid[i][j] = 0;
-      setUpdatedGrid(grid);
-      setPopulation(population - 1);
-      context.fillStyle = "white";
-    } else {
-      grid[i][j] = 1;
-      setPopulation(population + 1);
-      setUpdatedGrid(grid);
+    let duplicateGrid = [];
+    for (let k = 0; k < size; k++) {
+      duplicateGrid[k] = [...grid[k]];
     }
-    setGrid(grid);
-    drawOffscreenBuffer();
-  };
-
-  const toggleGame = () => {
-    setRunning(!running);
+    if (grid[i][j]) {
+      duplicateGrid[i][j] = 0;
+      setPopulation(population - 1);
+    } else {
+      duplicateGrid[i][j] = 1;
+      setPopulation(population + 1);
+    }
+    setGrid(duplicateGrid);
+    drawOffscreenBuffer(duplicateGrid);
   };
 
   const clearBoard = () => {
@@ -99,7 +84,6 @@ function App() {
   };
 
   const countActiveNeighbors = (currentGrid, i, j) => {
-    console.log(currentGrid);
     let neighbors = 0;
     const directions = [
       [-1, -1],
@@ -117,8 +101,6 @@ function App() {
 
       let i1 = i + dir[1];
       let j1 = j + dir[0];
-      console.log("Pair", i1, j1, currentGrid.length);
-      console.log("i/j", i, j);
       if (
         i1 >= 0 &&
         i1 <= currentGrid.length - 1 &&
@@ -134,39 +116,50 @@ function App() {
   };
 
   const generateNextGen = () => {
-    // const testGrid = updatedGrid;
+    let duplicateGrid = [];
+    for (let k = 0; k < size; k++) {
+      duplicateGrid[k] = [...grid[k]];
+    }
+    let flag = true;
 
     for (let i = 0; i < grid.length; i++) {
       for (let j = 0; j < grid.length; j++) {
         const numNeighbors = countActiveNeighbors(grid, i, j);
         if (grid[i][j] === 1) {
           if (numNeighbors < 2 || numNeighbors > 3) {
-            updatedGrid[i][j] = 0;
+            duplicateGrid[i][j] = 0;
           } else if (numNeighbors === 2 || numNeighbors === 3) {
-            updatedGrid[i][j] = 1;
+            duplicateGrid[i][j] = 1;
+            flag = false;
           }
         } else {
           if (numNeighbors === 3 && grid[i][j] === 0) {
-            updatedGrid[i][j] = 1;
+            duplicateGrid[i][j] = 1;
+            flag = false;
           }
         }
       }
     }
-    console.log(updatedGrid);
-    setUpdatedGrid(updatedGrid);
-    // updateGrid with alive cell at this index
-    // if neighbors > 3 or neighbors < 2
-    // update grid with dead cell at this index
-    setGeneration(generation + 1);
 
-    // Draw offscreen buffer
-    drawOffscreenBuffer();
+    if (flag) {
+      setRunning(false);
+    }
+
+    setGrid(duplicateGrid);
+    setGeneration(generation + 1);
   };
 
   const drawOffscreenBuffer = () => {
+    if (!offScreenBuffer) {
+      return;
+    }
     const context = offScreenBuffer.getContext("2d");
-    context.clearRect(0, 0, offScreenBuffer.width, offScreenBuffer.height);
+    context.fillStyle = "white";
+    context.fillRect(0, 0, offScreenBuffer.width, offScreenBuffer.height);
+    context.fillStyle = "black";
     for (let i = 0; i < size; i++) {
+      context.fillRect(i * 25, 0, 1, offScreenBuffer.height);
+      context.fillRect(0, i * 25, offScreenBuffer.width, 1);
       for (let j = 0; j < size; j++) {
         if (grid[i][j] === 1) {
           context.fillRect(i * 25, j * 25, 25, 25);
@@ -175,32 +168,21 @@ function App() {
     }
     const onScreenContext = canvasRef.current.getContext("2d");
     onScreenContext.drawImage(offScreenBuffer, 0, 0);
+    if (running) {
+      requestAnimationFrame(generateNextGen);
+      // if (speed === slow) {
+      // setTimeout(generateNextGen, 5000)
+      //} else if (speed === fast){
+      // requestAnimationFrame(generateNextGen);
+      // }
+    }
   };
-
-  //console.log(generateNextGen());
 
   return (
     <div className="App">
       <h1>Conway's Game of Life</h1>
       <h2>Generation:</h2>
       <div className="grid">
-        {/* {grid.map((row, i) => {
-          return row.map((col, j) => {
-            return (
-              <canvas
-                key={(i, j)}
-                style={{
-                  height: `${450 / size}px`,
-                  width: `${450 / size}px`,
-                  border: "1px solid black",
-                }}
-                className={col === 1 ? "alive" : "dead"}
-                ref={canvasRef}
-                onClick={() => toggleCell(i, j)}
-              ></canvas>
-            );
-          });
-        })} */}
         <canvas
           ref={canvasRef}
           onClick={toggleCell}
@@ -208,8 +190,9 @@ function App() {
           height={size * 25}
         />
       </div>
-      <button onClick={() => createGrid(size)}>Start</button>
+      <button onClick={() => setRunning(true)}>Start</button>
       <button onClick={() => generateNextGen()}>Next</button>
+      <button onClick={() => setRunning(false)}>Stop</button>
       <button onClick={() => clearBoard()}>Clear</button>
       <button
         onClick={() => {
