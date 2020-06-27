@@ -17,7 +17,8 @@ function App() {
   // useRef hook to use for canvas context.
   const canvasRef = useRef();
   // Track which of the animation frames is being displayed.
-  const [activeFrame, setActiveFrame] = useState(1);
+  // const [activeFrame, setActiveFrame] = useState(1);
+  const [offScreenBuffer, setOffScreenBuffer] = useState(null);
 
   console.log("grid", grid);
   console.log("updatedGrid", updatedGrid);
@@ -48,14 +49,22 @@ function App() {
     });
     setGrid(newGrid);
     setUpdatedGrid(newGrid);
+    let buffer = document.createElement("canvas");
+    buffer.width = size * 25;
+    buffer.height = size * 25;
+    setOffScreenBuffer(buffer);
     return newGrid;
   };
 
-  const toggleCell = (i, j) => {
+  const toggleCell = (event) => {
     const context = canvasRef.current.getContext("2d");
     // check to see if the selected cell is alive or dead.
     // if alive, switch state and reduce population
     // else, toggle cell alive, increase population, and update grid.
+    let i = Math.floor((event.clientX - canvasRef.current.offsetLeft) / size);
+    let j = Math.floor((event.clientY - canvasRef.current.offsetTop) / size);
+    debugger;
+
     if (grid[i][j]) {
       grid[i][j] = 0;
       setUpdatedGrid(grid);
@@ -67,6 +76,7 @@ function App() {
       setUpdatedGrid(grid);
     }
     setGrid(grid);
+    drawOffscreenBuffer();
   };
 
   const toggleGame = () => {
@@ -139,6 +149,23 @@ function App() {
     // if neighbors > 3 or neighbors < 2
     // update grid with dead cell at this index
     setGeneration(generation + 1);
+
+    // Draw offscreen buffer
+    drawOffscreenBuffer();
+  };
+
+  const drawOffscreenBuffer = () => {
+    const context = offScreenBuffer.getContext("2d");
+    context.clearRect(0, 0, offScreenBuffer.width, offScreenBuffer.height);
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        if (grid[i][j] === 1) {
+          context.fillRect(i * 25, j * 25, 25, 25);
+        }
+      }
+    }
+    const onScreenContext = canvasRef.current.getContext("2d");
+    onScreenContext.drawImage(offScreenBuffer, 0, 0);
   };
 
   //console.log(generateNextGen());
@@ -168,8 +195,8 @@ function App() {
         <canvas
           ref={canvasRef}
           onClick={toggleCell}
-          width={size * 25 + "px"}
-          height={size * 25 + "px"}
+          width={size * 25}
+          height={size * 25}
         />
       </div>
       <button onClick={() => createGrid(size)}>Start</button>
