@@ -16,6 +16,8 @@ function App() {
   const canvasRef = useRef();
   // Track which of the animation frames is being displayed.
   const [offScreenBuffer, setOffScreenBuffer] = useState(null);
+  // Hold the user's selected animation speed.
+  // const [animationSpeed, setAnimationSpeed] = useState(0);
 
   // create an empty grid when app loads.
   useEffect(() => {
@@ -33,6 +35,14 @@ function App() {
     drawOffscreenBuffer();
   }, [grid]);
 
+  const toggleRunning = () => {
+    setRunning(!running);
+  };
+
+  // const setGameSpeed = (event) => {
+  //   setAnimationSpeed(event.target.value);
+  // };
+
   const createGrid = (num) => {
     const newGrid = new Array(num).fill(0);
     newGrid.forEach((item, idx) => {
@@ -45,6 +55,23 @@ function App() {
     buffer.height = size * 25;
     setOffScreenBuffer(buffer);
     return newGrid;
+  };
+
+  const randomGrid = () => {
+    let duplicateGrid = [];
+    for (let k = 0; k < size; k++) {
+      duplicateGrid[k] = [...grid[k]];
+    }
+    for (let i = 0; i < grid.length; i++) {
+      for (let j = 0; j < grid.length; j++) {
+        if (Math.random() < 0.4) {
+          duplicateGrid[i][j] = 1;
+        } else {
+          duplicateGrid[i][j] = 0;
+        }
+      }
+    }
+    setGrid(duplicateGrid);
   };
 
   const toggleCell = (event) => {
@@ -64,10 +91,6 @@ function App() {
         size
     );
 
-    console.log(
-      (event.clientX - canvasRef.current.offsetLeft) /
-        canvasRef.current.offsetWidth
-    );
     let duplicateGrid = [];
     for (let k = 0; k < size; k++) {
       duplicateGrid[k] = [...grid[k]];
@@ -85,6 +108,7 @@ function App() {
 
   const clearBoard = () => {
     setRunning(false);
+    setGeneration(0);
     setSize(25);
     createGrid(size);
   };
@@ -183,10 +207,12 @@ function App() {
     // if the game is running, request the next generation
     if (running) {
       requestAnimationFrame(generateNextGen);
-      // if (speed === slow) {
-      // setTimeout(generateNextGen, 5000)
-      //} else if (speed === fast){
-      // requestAnimationFrame(generateNextGen);
+      // if (animationSpeed === 2000) {
+      //   window.setTimeout(generateNextGen, animationSpeed);
+      // } else if (animationSpeed === 1000) {
+      //   window.setTimeout(generateNextGen, animationSpeed);
+      // } else {
+      //   requestAnimationFrame(generateNextGen);
       // }
     }
   };
@@ -207,10 +233,12 @@ function App() {
           height={size * 25}
         />
       </div>
-      <button onClick={() => setRunning(true)}>Start</button>
+      <button onClick={() => toggleRunning()}>
+        {running ? "Stop" : "Start"}
+      </button>
       <button onClick={() => generateNextGen()}>Next</button>
-      <button onClick={() => setRunning(false)}>Stop</button>
       <button onClick={() => clearBoard()}>Clear</button>
+      <button onClick={() => randomGrid()}>Random Grid</button>
       <button
         onClick={() => {
           setSize(30);
@@ -232,6 +260,17 @@ function App() {
       >
         50
       </button>
+      {/* <div>
+        <select
+          className="animation-speed"
+          value={animationSpeed}
+          onClick={setGameSpeed}
+        >
+          <option value={2000}>Slow</option>
+          <option value={1000}>Normal</option>
+          <option value={0}>Fast</option>
+        </select>
+      </div> */}
       <div className="rules-container">
         <p>
           The universe of the Game of Life is an infinite, two-dimensional
