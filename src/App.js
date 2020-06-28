@@ -3,7 +3,7 @@ import "./App.css";
 
 function App() {
   // Set the default size of the grid.
-  const [size, setSize] = useState(20);
+  const [size, setSize] = useState(25);
   // Hold the initial empty grid in state.
   const [grid, setGrid] = useState([]);
   // Track whether the game is running or not.
@@ -15,13 +15,14 @@ function App() {
   // useRef hook to use for canvas context.
   const canvasRef = useRef();
   // Track which of the animation frames is being displayed.
-  // const [activeFrame, setActiveFrame] = useState(1);
   const [offScreenBuffer, setOffScreenBuffer] = useState(null);
 
+  // create an empty grid when app loads.
   useEffect(() => {
     createGrid(size);
   }, [size]);
 
+  // When running changes to true, start the animation.
   useEffect(() => {
     if (running) {
       requestAnimationFrame(generateNextGen);
@@ -38,6 +39,7 @@ function App() {
       newGrid[idx] = new Array(num).fill(0);
     });
     setGrid(newGrid);
+    // creating the offscreen buffer.
     let buffer = document.createElement("canvas");
     buffer.width = size * 25;
     buffer.height = size * 25;
@@ -46,20 +48,24 @@ function App() {
   };
 
   const toggleCell = (event) => {
-    const context = canvasRef.current.getContext("2d");
     // check to see if the selected cell is alive or dead.
     // if alive, switch state and reduce population
     // else, toggle cell alive, increase population, and update grid.
-    let m = canvasRef.current.offsetWidth / canvasRef.current.width;
+    // Figure out the location of the cell that we are looking to toggle the state of.
+
     let i = Math.floor(
-      ((event.clientX - canvasRef.current.offsetLeft) * m) / size
+      ((event.pageX - canvasRef.current.offsetLeft) /
+        canvasRef.current.offsetWidth) *
+        size
     );
     let j = Math.floor(
-      ((event.clientY - canvasRef.current.offsetTop) * m) / size
+      ((event.pageY - canvasRef.current.offsetTop) /
+        canvasRef.current.offsetWidth) *
+        size
     );
-    console.log(m);
+
     console.log(
-      (event.clientX - canvasRef.current.offsetLeft * m) /
+      (event.clientX - canvasRef.current.offsetLeft) /
         canvasRef.current.offsetWidth
     );
     let duplicateGrid = [];
@@ -79,7 +85,7 @@ function App() {
 
   const clearBoard = () => {
     setRunning(false);
-    setSize(20);
+    setSize(25);
     createGrid(size);
   };
 
@@ -98,7 +104,6 @@ function App() {
     // i = y / j = x
     for (let k = 0; k <= directions.length - 1; k++) {
       const dir = directions[k];
-
       let i1 = i + dir[1];
       let j1 = j + dir[0];
       if (
@@ -153,21 +158,29 @@ function App() {
     if (!offScreenBuffer) {
       return;
     }
+    // access primary context object.
     const context = offScreenBuffer.getContext("2d");
+    // erase the previous image.
     context.fillStyle = "white";
     context.fillRect(0, 0, offScreenBuffer.width, offScreenBuffer.height);
+    // reset color to black to draw new image.
     context.fillStyle = "black";
     for (let i = 0; i < size; i++) {
+      // drawing the grid lines on the board
       context.fillRect(i * 25, 0, 1, offScreenBuffer.height);
       context.fillRect(0, i * 25, offScreenBuffer.width, 1);
       for (let j = 0; j < size; j++) {
         if (grid[i][j] === 1) {
+          // if the cell has been toggled alive, fill it in black.
           context.fillRect(i * 25, j * 25, 25, 25);
         }
       }
     }
+    // accessing on screen context object
     const onScreenContext = canvasRef.current.getContext("2d");
+    // drawing the off screen buffer to the on screen canvas.
     onScreenContext.drawImage(offScreenBuffer, 0, 0);
+    // if the game is running, request the next generation
     if (running) {
       requestAnimationFrame(generateNextGen);
       // if (speed === slow) {
@@ -181,9 +194,13 @@ function App() {
   return (
     <div className="App">
       <h1>Conway's Game of Life</h1>
-      <h2>Generation:</h2>
-      <div className="grid">
+      <h2>
+        Generation:
+        <span>{generation}</span>
+      </h2>
+      <div>
         <canvas
+          className="grid"
           ref={canvasRef}
           onClick={toggleCell}
           width={size * 25}
@@ -197,7 +214,6 @@ function App() {
       <button
         onClick={() => {
           setSize(30);
-          createGrid(size);
         }}
       >
         30
@@ -205,7 +221,6 @@ function App() {
       <button
         onClick={() => {
           setSize(40);
-          createGrid(size);
         }}
       >
         40
@@ -213,7 +228,6 @@ function App() {
       <button
         onClick={() => {
           setSize(50);
-          createGrid(size);
         }}
       >
         50
